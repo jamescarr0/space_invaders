@@ -1,14 +1,14 @@
 class Settings:
-    """ A class to store all the settings for the Space Invaders """
+    """ A class to store all the settings for the game. """
 
     def __init__(self):
-        """ Initialise game settings """
+        """ Initialise game settings. """
 
         # Screen Settings
         self.screen_width = 0
         self.screen_height = 0
         self.BACKGROUND_COLOR = (230, 230, 230)
-        self.WINDOW_TITLE = "Retro Space Invaders"
+        self.WINDOW_TITLE = "Retro Space Invaders."
 
         # Spaceship settings
         self.SPACESHIP_SPEED = 5

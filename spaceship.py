@@ -2,7 +2,7 @@ import pygame
 
 
 class Spaceship:
-    """ A class to manage the spaceship """
+    """ A class to manage the spaceship. """
 
     def __init__(self, si_game):
         self.settings = si_game.settings
@@ -23,7 +23,7 @@ class Spaceship:
         self.x = float(self.image_rect.x)
 
     def move(self):
-        """ Update the spaceship's position based on the continuous movement flags """
+        """ Update the spaceship's position. """
         if self.moving_right and self.image_rect.right < self.screen_rect.right:
             self.x += self.settings.SPACESHIP_SPEED
         if self.moving_left and self.image_rect.left > 0:
@@ -32,4 +32,5 @@ class Spaceship:
         self.image_rect.x = self.x
 
     def blitme(self):
+        """ blit spaceship to screen. """
         self.screen.blit(self.image, self.image_rect)
