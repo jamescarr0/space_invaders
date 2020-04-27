@@ -2,6 +2,7 @@ import pygame
 from pygame.sprite import Sprite
 from random import randint
 
+
 class SpaceshipMissile(Sprite):
     """ A class to manage the missiles fired from the spaceship. """
 
@@ -35,5 +36,4 @@ class SpaceshipMissile(Sprite):
 
     def draw_missile(self):
         """ Draw the missile to the screen. """
-        #pygame.draw.rect(self.screen, self.settings.missile_color, self.missile_rect)
         self.screen.blit(self.image, self.rect)
