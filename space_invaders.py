@@ -11,7 +11,7 @@ class SpaceInvaders:
     """ General class to manage game assets and behaviour. """
 
     def __init__(self):
-        """ Initialise and create objects """
+        """ Initialise and create objects. """
         self.settings = Settings()
 
         pygame.init()
