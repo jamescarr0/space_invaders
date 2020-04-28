@@ -1,40 +1,42 @@
 import sys
 import pygame
 
+from time import sleep
+
 from settings import Settings
 from spaceship import Spaceship
 from spaceship_missile import SpaceshipMissile
 from alien import Alien
+from game_stats import GameStats
 
 
 class SpaceInvaders:
     """ General class to manage game assets and behaviour. """
 
     def __init__(self):
-        """ Initialise and create objects """
+        """ Initialise and create objects. """
         self.settings = Settings()
+        self.game_stats = GameStats(self)
 
         pygame.init()
         pygame.display.set_caption(self.settings.WINDOW_TITLE)
-
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        self.settings.screen_width = self.screen.get_rect().width
-        self.settings.screen_height = self.screen.get_rect().height
+        self.screen = pygame.display.set_mode([self.settings.screen_width, self.settings.screen_height])
 
         self.spaceship = Spaceship(self)
-
         self.missiles = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
-
         self._create_alien_fleet()
 
     def run_game(self):
         """ Run game - Begin main loop for game. """
         while True:
             self._check_events()
-            self.spaceship.move()
-            self._update_missiles()
-            self._update_aliens()
+
+            if self.game_stats.game_active:
+                self.spaceship.move()
+                self._update_missiles()
+                self._update_aliens()
+
             self._update_screen()
 
     def _check_events(self):
@@ -84,9 +86,18 @@ class SpaceInvaders:
             if missile.rect.bottom <= 0:
                 self.missiles.remove(missile)
 
-        # Check for any missiles that have hit alien ships.
-        # If collisions detected, remove both alien ship and missile.
+        self._check_missile_collisions()
+
+    def _check_missile_collisions(self):
+        """ Respond to missile-alien collisions. """
+        # Remove missiles and aliens that have collided.
         collisions = pygame.sprite.groupcollide(self.missiles, self.aliens, True, True)
+
+        # An empty group evaluates to False.
+        if not self.aliens:
+            # Destroy existing missiles and create a new fleet of alien ships.
+            self.missiles.empty()
+            self._create_alien_fleet()
 
     def _create_alien_fleet(self):
         """ Create a fleet of alien ships. """
@@ -99,7 +110,7 @@ class SpaceInvaders:
         number_aliens_x = available_space_x // (2 * alien_ship_width)
 
         # Calculate available y space for number of alien ship rows
-        spaceship_height = self.spaceship.image_rect.height
+        spaceship_height = self.spaceship.rect.height
         available_space_y = (self.settings.screen_height - (3 * alien_ship_height) - spaceship_height)
         number_rows = available_space_y // (2 * alien_ship_height)
 
@@ -134,6 +145,44 @@ class SpaceInvaders:
         """ Update alien ships on screen """
         self._check_alien_edges()
         self.aliens.update()
+
+        # Check for aliens hitting spaceship.
+        if pygame.sprite.spritecollide(self.spaceship, self.aliens, False):
+            self._spaceship_hit()
+
+        # Check for aliens reaching the bottom of the screen.
+        self._check_aliens_bottom()
+
+    def _spaceship_hit(self):
+        """ Respond to spaceship colliding with an alien """
+
+        if self.game_stats.ships_remaining > 0:
+            # Decrement a life.
+            self.game_stats.ships_remaining -= 1
+
+            # Remove remaining aliens and missiles
+            self.aliens.empty()
+            self.missiles.empty()
+
+            # Create a new fleet of aliens and center the spaceship.
+            self._create_alien_fleet()
+            self.spaceship.respawn()
+
+            # Briefly Pause so player can regroup before new fleet arrives.
+            sleep(1.0)
+        else:
+            print("Game Over!!")
+            self.game_stats.game_active = False
+
+    def _check_aliens_bottom(self):
+        """ Respond to aliens reaching the bottom of the screen. """
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= screen_rect.bottom:
+                # Same action as if the spaceship has been hit.
+                print("Alien Reached Ground.")
+                self._spaceship_hit()
+                break
 
     def _update_screen(self):
         """ Update images on screen and flip to the new screen. """
