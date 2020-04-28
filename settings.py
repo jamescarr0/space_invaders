@@ -8,7 +8,7 @@ class Settings:
         self.screen_width = 1200
         self.screen_height = 800
         self.BACKGROUND_COLOR = (230, 230, 230)
-        self.WINDOW_TITLE = "Retro Space Invaders."
+        self.WINDOW_TITLE = "Space Invaders."
 
         # Spaceship settings
         self.SPACESHIP_SPEED = 10
