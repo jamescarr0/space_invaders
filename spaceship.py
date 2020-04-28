@@ -25,9 +25,9 @@ class Spaceship:
     def move(self):
         """ Update the spaceship's position. """
         if self.moving_right and self.rect.right < self.screen_rect.right:
-            self.x += self.settings.SPACESHIP_SPEED
+            self.x += self.settings.spaceship_speed
         if self.moving_left and self.rect.left > 0:
-            self.x -= self.settings.SPACESHIP_SPEED
+            self.x -= self.settings.spaceship_speed
 
         self.rect.x = self.x
 
