@@ -8,6 +8,8 @@ from spaceship import Spaceship
 from spaceship_missile import SpaceshipMissile
 from alien import Alien
 from game_stats import GameStats
+from button import Button
+from scoreboard import Scoreboard
 
 
 class SpaceInvaders:
@@ -16,8 +18,6 @@ class SpaceInvaders:
     def __init__(self):
         """ Initialise and create objects. """
         self.settings = Settings()
-        self.game_stats = GameStats(self)
-
         pygame.init()
         pygame.display.set_caption(self.settings.WINDOW_TITLE)
         self.screen = pygame.display.set_mode([self.settings.screen_width, self.settings.screen_height])
@@ -26,6 +26,13 @@ class SpaceInvaders:
         self.missiles = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self._create_alien_fleet()
+
+        # Create the start game button.
+        self.play_button = Button(self, "Start Game")
+
+        # Create scoreboard and instance to store game statistics
+        self.game_stats = GameStats(self)
+        self.scoreboard = Scoreboard(self)
 
     def run_game(self):
         """ Run game - Begin main loop for game. """
@@ -48,6 +55,31 @@ class SpaceInvaders:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_position = pygame.mouse.get_pos()
+                self._check_play_button_pressed(mouse_position)
+
+    def _check_play_button_pressed(self, mouse_position):
+        """ Begin game when player clicks the start/play button. """
+
+        if self.play_button.rect.collidepoint(mouse_position) and not self.game_stats.game_active:
+            # Reset game stats and dynamic game settings.
+            self.game_stats.reset_stats()
+            self.game_stats.game_active = True
+            self.settings.initialise_dynamic_settings()
+            # Reset scoreboard to zero
+            self.scoreboard.prepare_scoreboard()
+
+            # Reset aliens and missiles.
+            self.aliens.empty()
+            self.missiles.empty()
+
+            # Create a new fleet and aliens and center players spaceship.
+            self._create_alien_fleet()
+            self.spaceship.respawn()
+
+            # Hide the mouse cursor when game is active
+            pygame.mouse.set_visible(False)
 
     def _check_keyup_events(self, event):
         """ Respond to key releases. """
@@ -92,12 +124,17 @@ class SpaceInvaders:
         """ Respond to missile-alien collisions. """
         # Remove missiles and aliens that have collided.
         collisions = pygame.sprite.groupcollide(self.missiles, self.aliens, True, True)
+        if collisions:
+            for aliens in collisions.values():
+                self.game_stats.score += self.settings.alien_points * len(aliens)
+            self.scoreboard.prepare_scoreboard()
 
         # An empty group evaluates to False.
         if not self.aliens:
             # Destroy existing missiles and create a new fleet of alien ships.
             self.missiles.empty()
             self._create_alien_fleet()
+            self.settings.increase_speed()
 
     def _create_alien_fleet(self):
         """ Create a fleet of alien ships. """
@@ -171,8 +208,8 @@ class SpaceInvaders:
             # Briefly Pause so player can regroup before new fleet arrives.
             sleep(1.0)
         else:
-            print("Game Over!!")
             self.game_stats.game_active = False
+            pygame.mouse.set_visible(True)
 
     def _check_aliens_bottom(self):
         """ Respond to aliens reaching the bottom of the screen. """
@@ -193,6 +230,13 @@ class SpaceInvaders:
             missile.draw_missile()
 
         self.aliens.draw(self.screen)
+
+        # Draw the scoreboard information.
+        self.scoreboard.show_scoreboard()
+
+        # Draw start game button if the game state is inactive.
+        if not self.game_stats.game_active:
+            self.play_button.draw_button()
 
         # Make the most recently drawn screen visible.
         pygame.display.flip()

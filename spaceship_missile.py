@@ -10,7 +10,7 @@ class SpaceshipMissile(Sprite):
         super().__init__()
         self.screen = game.screen
         self.settings = game.settings
-        self.image = pygame.transform.smoothscale((pygame.image.load('images/missile.png')), (25, 75))
+        self.image = pygame.transform.smoothscale((pygame.image.load('images/missile.png')), (15, 45))
         self.rect = self.image.get_rect()
         self.rect.midtop = game.spaceship.rect.midtop
 
