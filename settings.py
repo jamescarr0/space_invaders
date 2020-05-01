@@ -24,7 +24,8 @@ class Settings:
         # Alien direction 1 represents RIGHT; -1 represents LEFT
         self.alien_direction = 1
 
-        # Alien points for scoring
+        # Score settings
+        self.high_score_file = "support_files/high_score.txt"
         self.alien_points = 10
 
         # Game speed up scale.
@@ -43,4 +44,3 @@ class Settings:
         self.missile_speed *= self.speed_scale
         self.alien_speed *= self.speed_scale
         self.alien_points *= self.points_scale
-
