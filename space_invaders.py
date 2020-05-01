@@ -50,6 +50,9 @@ class SpaceInvaders:
         """ Watch for, and respond to keyboard and mouse events. """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                # Terminate via window closure.
+                # Persist high score before terminating game.
+                self._persist_high_score()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -69,6 +72,8 @@ class SpaceInvaders:
             self.settings.initialise_dynamic_settings()
             # Reset scoreboard to zero
             self.scoreboard.prepare_scoreboard()
+            self.scoreboard.prepare_level()
+            self.scoreboard.prepare_lives()
 
             # Reset aliens and missiles.
             self.aliens.empty()
@@ -93,6 +98,8 @@ class SpaceInvaders:
 
         # Quit Game
         if event.key == pygame.K_q:
+            # Persist the high score before terminating game.
+            self._persist_high_score()
             sys.exit()
 
         # Fire Missile
@@ -128,13 +135,18 @@ class SpaceInvaders:
             for aliens in collisions.values():
                 self.game_stats.score += self.settings.alien_points * len(aliens)
             self.scoreboard.prepare_scoreboard()
+            self.scoreboard.check_high_score()
 
-        # An empty group evaluates to False.
+        # An empty group evaluates to False. Level up!
         if not self.aliens:
             # Destroy existing missiles and create a new fleet of alien ships.
             self.missiles.empty()
             self._create_alien_fleet()
             self.settings.increase_speed()
+
+            # Increment Level
+            self.game_stats.level += 1
+            self.scoreboard.prepare_level()
 
     def _create_alien_fleet(self):
         """ Create a fleet of alien ships. """
@@ -161,7 +173,7 @@ class SpaceInvaders:
         alien = Alien(self)
         alien.x = alien_ship_width + 2 * alien_ship_width * alien_number
         alien.rect.x = alien.x
-        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        alien.rect.y = (alien.rect.height + 2 * alien.rect.height * row_number) + 20
         self.aliens.add(alien)
 
     def _check_alien_edges(self):
@@ -193,9 +205,10 @@ class SpaceInvaders:
     def _spaceship_hit(self):
         """ Respond to spaceship colliding with an alien """
 
-        if self.game_stats.ships_remaining > 0:
+        if self.game_stats.ships_remaining > 1:
             # Decrement a life.
             self.game_stats.ships_remaining -= 1
+            self.scoreboard.prepare_lives()
 
             # Remove remaining aliens and missiles
             self.aliens.empty()
@@ -208,6 +221,8 @@ class SpaceInvaders:
             # Briefly Pause so player can regroup before new fleet arrives.
             sleep(1.0)
         else:
+            self.game_stats.ships_remaining -= 1
+            self.scoreboard.prepare_lives()
             self.game_stats.game_active = False
             pygame.mouse.set_visible(True)
 
@@ -240,6 +255,12 @@ class SpaceInvaders:
 
         # Make the most recently drawn screen visible.
         pygame.display.flip()
+
+    def _persist_high_score(self):
+        """ Persist the high score to file. """
+        with open(self.settings.high_score_file, 'w') as high_score_file:
+            high_score_file.write(str(self.game_stats.high_score))
+            print(f"Writing high score to file: score = {self.game_stats.high_score}")
 
 
 if __name__ == '__main__':
