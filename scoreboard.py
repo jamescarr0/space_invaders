@@ -17,7 +17,7 @@ class Scoreboard:
 
         # Font settings for scoreboard information.
         self.text_color = (30, 30, 30)
-        self.font = pygame.font.SysFont(None, 32)
+        self.font = pygame.font.Font('support_files/retro_font.ttf', 14)
 
         # create the scoreboard images
         self.prepare_scoreboard()
