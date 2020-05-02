@@ -12,7 +12,8 @@ class Spaceship(Sprite):
         self.screen_rect = si_game.screen.get_rect()
 
         # Load the spaceship image and get its rectangle.
-        self.image = pygame.transform.smoothscale((pygame.image.load('images/spaceship.png')), (80, 120))
+        self.image = pygame.transform.smoothscale((pygame.image.load('images/spaceship.png')
+                                                   .convert_alpha()), (80, 120))
         self.rect = self.image.get_rect()
 
         # Start with a new ship at the bottom center of the screen.

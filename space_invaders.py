@@ -21,6 +21,8 @@ class SpaceInvaders:
         pygame.init()
         pygame.display.set_caption(self.settings.WINDOW_TITLE)
         self.screen = pygame.display.set_mode([self.settings.screen_width, self.settings.screen_height])
+        self.bg = pygame.transform.smoothscale((pygame.image.load('images/milky_way.jpg')
+                                                   .convert()), (1200, 800))
 
         self.spaceship = Spaceship(self)
         self.missiles = pygame.sprite.Group()
@@ -238,7 +240,8 @@ class SpaceInvaders:
 
     def _update_screen(self):
         """ Update images on screen and flip to the new screen. """
-        self.screen.fill(self.settings.BACKGROUND_COLOR)
+        #self.screen.fill(self.settings.BACKGROUND_COLOR)
+        self.screen.blit(self.bg, self.screen.get_rect())
         self.spaceship.blitme()
 
         for missile in self.missiles.sprites():
@@ -260,8 +263,6 @@ class SpaceInvaders:
         """ Persist the high score to file. """
         with open(self.settings.high_score_file, 'w') as high_score_file:
             high_score_file.write(str(self.game_stats.high_score))
-            print(f"Writing high score to file: score = {self.game_stats.high_score}")
-
 
 if __name__ == '__main__':
     # Launch the game.

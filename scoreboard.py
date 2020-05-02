@@ -16,7 +16,7 @@ class Scoreboard:
         self.stats = game.game_stats
 
         # Font settings for scoreboard information.
-        self.text_color = (30, 30, 30)
+        self.text_color = self.settings.TEXT_COLOR
         self.font = pygame.font.Font('support_files/retro_font.ttf', 14)
 
         # create the scoreboard images
@@ -25,10 +25,18 @@ class Scoreboard:
         self.prepare_level()
         self.prepare_lives()
 
+    def _render_image(self, string):
+        """ Render passed string as an image, convert to alpha, remove the background color for a transparent
+        background and return the rendered image. """
+        image = self.font.render(string, True, self.text_color, self.settings.BACKGROUND_COLOR)
+        image.convert_alpha()
+        image.set_colorkey(self.settings.BACKGROUND_COLOR)
+        return image
+
     def prepare_scoreboard(self):
         """ Turn scoreboard into a rendered image. """
         score_string = str(f"Score: {{:,}}".format(self.stats.score))
-        self.score_image = self.font.render(score_string, True, self.text_color, self.settings.BACKGROUND_COLOR)
+        self.score_image = self._render_image(score_string)
 
         # Position scoreboard at top right of the screen
         self.score_rect = self.score_image.get_rect()
@@ -38,7 +46,7 @@ class Scoreboard:
     def prepare_high_scoreboard(self):
         """ Turn the highest score into a rendered image. """
         high_score = str(f"High Score: {{:,}}".format(self.stats.high_score))
-        self.high_score_image = self.font.render(high_score, True, self.text_color, self.settings.BACKGROUND_COLOR)
+        self.high_score_image = self._render_image(high_score)
 
         # Position high score in centre of the screen
         self.high_score_rect = self.high_score_image.get_rect()
@@ -48,7 +56,7 @@ class Scoreboard:
     def prepare_level(self):
         """ Turn the level into a rendered image. """
         level_str = f"Level: {self.stats.level}"
-        self.level_image = self.font.render(level_str, True, self.text_color, self.settings.BACKGROUND_COLOR)
+        self.level_image = self._render_image(level_str)
 
         # Position the level under the current score
         self.level_rect = self.level_image.get_rect()
