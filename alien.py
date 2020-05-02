@@ -12,7 +12,7 @@ class Alien(Sprite):
         self.settings = game.settings
 
         # Load the alien ship image and set its rect attribute.
-        self.image = pygame.transform.smoothscale((pygame.image.load('images/germ.png')), (60, 60))
+        self.image = pygame.transform.smoothscale((pygame.image.load('images/germ.png').convert_alpha()), (60, 60))
         self.rect = self.image.get_rect()
 
         # Start each new alien ship near the top left corner of the screen.

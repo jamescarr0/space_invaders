@@ -1,3 +1,5 @@
+import pygame
+
 class Settings:
     """ A class to store all the settings for the game. """
 
@@ -8,7 +10,9 @@ class Settings:
         self.screen_width = 1200
         self.screen_height = 800
         self.BACKGROUND_COLOR = (230, 230, 230)
-        self.WINDOW_TITLE = "Space Invaders."
+        self.TEXT_COLOR = (255, 255, 255)
+        self.BACKGROUND_IMAGE = 'images/milky_way.jpg'
+        self.WINDOW_TITLE = "--- [ Space Invaders ] ---"
 
         # Spaceship settings
         self.spaceship_speed = 3.0

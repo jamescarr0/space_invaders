@@ -11,7 +11,7 @@ class Button:
         # Set the dimensions and properties of the button
         self.width, self.height = 300, 50
         self.button_color = (0, 255, 0)
-        self.text_color = (255, 255, 255)
+        self.text_color = game.settings.TEXT_COLOR
         self.font = pygame.font.Font('support_files/retro_font.ttf', 22)
 
         # Create the buttons rect object and position central to screen
@@ -23,7 +23,7 @@ class Button:
 
     def _render_message(self, message):
         """ Turn message into a rendered image and center text on the button. """
-        self.message_image = self.font.render(message, True, self.text_color, self.button_color)
+        self.message_image = self.font.render(message, True, self.text_color, self.button_color).convert()
         self.message_image_rect = self.message_image.get_rect()
         self.message_image_rect.center = self.rect.center
 
