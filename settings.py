@@ -1,4 +1,5 @@
 import pygame
+from game_stats import GameStats
 
 class Settings:
     """ A class to store all the settings for the game. """
@@ -40,11 +41,23 @@ class Settings:
         """ Initialise settings that have changed throughout game-play """
         self.spaceship_speed = 3.0
         self.missile_speed = 6.0
-        self.alien_speed = 3.0
+        self.alien_speed = 33.0
         self.alien_points = 10
 
     def increase_speed(self):
+        """ Increase speed of game elements each time player levels up"""
         self.spaceship_speed *= self.speed_scale
         self.missile_speed *= self.speed_scale
         self.alien_speed *= self.speed_scale
         self.alien_points *= self.points_scale
+
+    def play_sound(self, game_stats, sound_effect):
+        """ Check if game is active & play the required sound effect. """
+        if game_stats.game_active:
+            if sound_effect == 'missile':
+                sound_file = self.missile_sound
+            elif sound_effect == 'explosion':
+                sound_file = self.explosion_sound
+
+            pygame.mixer.Sound(sound_file).play()
+
