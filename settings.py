@@ -5,6 +5,7 @@ class Settings:
         """ Initialise game settings. """
 
         # Screen Settings
+        self.FPS = 60
         self.screen_width = 1200
         self.screen_height = 800
         self.BACKGROUND_COLOR = (230, 230, 230)
