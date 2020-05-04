@@ -1,5 +1,3 @@
-import pygame
-
 class Settings:
     """ A class to store all the settings for the game. """
 
@@ -44,6 +42,7 @@ class Settings:
         self.alien_points = 10
 
     def increase_speed(self):
+        """ Increase speed of game elements each time player levels up"""
         self.spaceship_speed *= self.speed_scale
         self.missile_speed *= self.speed_scale
         self.alien_speed *= self.speed_scale

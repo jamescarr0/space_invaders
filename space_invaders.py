@@ -10,6 +10,7 @@ from alien import Alien
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
+from sound_effects import  SoundEffects
 
 
 class SpaceInvaders:
@@ -19,6 +20,7 @@ class SpaceInvaders:
         """ Initialise and create objects. """
         self.settings = Settings()
         pygame.init()
+        pygame.mixer.init()
         pygame.display.set_caption(self.settings.WINDOW_TITLE)
         self.screen = pygame.display.set_mode([self.settings.screen_width, self.settings.screen_height])
         self.bg = pygame.transform.smoothscale((pygame.image.load('images/milky_way.jpg')
@@ -36,8 +38,15 @@ class SpaceInvaders:
         self.game_stats = GameStats(self)
         self.scoreboard = Scoreboard(self)
 
+        # Create a sound instance to play sounds.
+        self.sfx = SoundEffects(self.game_stats)
+
     def run_game(self):
         """ Run game - Begin main loop for game. """
+
+        # Start the games background sound.
+        self.sfx.start_ambient_sound()
+
         while True:
             self._check_events()
 
@@ -115,10 +124,13 @@ class SpaceInvaders:
             self.spaceship.moving_left = True
 
     def _fire_missile(self):
-        """ Create a new missile, and add it to the missiles sprite group. """
+        """ Create a new missile, add it to the missiles sprite group and play the missile sound effects. """
         if len(self.missiles) < self.settings.missile_count:
             new_missile = SpaceshipMissile(self)
             self.missiles.add(new_missile)
+
+            # Play missile sound effect.
+            self.sfx.play_sound('missile')
 
     def _update_missiles(self):
         """ Update missile positions and remove missiles that are off the screen. """
@@ -136,6 +148,10 @@ class SpaceInvaders:
         if collisions:
             for aliens in collisions.values():
                 self.game_stats.score += self.settings.alien_points * len(aliens)
+
+                # Play explosion (missile striking target) sound for each alien hit.
+                self.sfx.play_sound('explosion')
+
             self.scoreboard.prepare_scoreboard()
             self.scoreboard.check_high_score()
 
@@ -206,6 +222,8 @@ class SpaceInvaders:
 
     def _spaceship_hit(self):
         """ Respond to spaceship colliding with an alien """
+        # Play alien striking spaceship sound.
+        self.sfx.play_sound('alien_hit')
 
         if self.game_stats.ships_remaining > 1:
             # Decrement a life.
@@ -221,7 +239,7 @@ class SpaceInvaders:
             self.spaceship.respawn()
 
             # Briefly Pause so player can regroup before new fleet arrives.
-            sleep(1.0)
+            sleep(2.0)
         else:
             self.game_stats.ships_remaining -= 1
             self.scoreboard.prepare_lives()
@@ -234,7 +252,6 @@ class SpaceInvaders:
         for alien in self.aliens.sprites():
             if alien.rect.bottom >= screen_rect.bottom:
                 # Same action as if the spaceship has been hit.
-                print("Alien Reached Ground.")
                 self._spaceship_hit()
                 break
 
