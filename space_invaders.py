@@ -18,7 +18,9 @@ class SpaceInvaders:
 
     def __init__(self):
         """ Initialise and create objects. """
+        self.clock = pygame.time.Clock()
         self.settings = Settings()
+
         pygame.init()
         pygame.mixer.init()
         pygame.display.set_caption(self.settings.WINDOW_TITLE)
@@ -48,22 +50,21 @@ class SpaceInvaders:
     def run_game(self):
         """ Run game - Begin main loop for game. """
 
-        # Limit FPS
-        clock = pygame.time.Clock()
-
         # Start the games background sound.
         self.sfx.start_ambient_sound()
 
         while True:
+            fps = self.clock.get_fps()
             self._check_events()
 
             if self.game_stats.game_active:
                 self.spaceship.move()
                 self._update_missiles()
                 self._update_aliens()
+                self.scoreboard.prepare_frames_per_second(fps)
 
             self._update_screen()
-            clock.tick(self.settings.FPS)
+            self.clock.tick(self.settings.FPS)
 
     def _check_events(self):
         """ Watch for, and respond to keyboard and mouse events. """

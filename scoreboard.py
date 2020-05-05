@@ -24,6 +24,7 @@ class Scoreboard:
         self.prepare_high_scoreboard()
         self.prepare_level()
         self.prepare_lives()
+        self.prepare_frames_per_second(0.0)
 
     def _render_image(self, string):
         """ Render passed string as an image, convert to alpha, remove the background color for a transparent
@@ -32,6 +33,15 @@ class Scoreboard:
         image.convert_alpha()
         image.set_colorkey(self.settings.BACKGROUND_COLOR)
         return image
+
+    def prepare_frames_per_second(self, fps):
+        """ Turn FPS into a rendered image. """
+
+        self.fps_str = str(f"fps: {round(fps)}")
+        self.fps_image = self._render_image(self.fps_str)
+        self.fps_image_rect = self.fps_image.get_rect()
+        self.fps_image_rect.top = self.level_rect.bottom + 10
+        self.fps_image_rect.right = self.score_rect.right
 
     def prepare_scoreboard(self):
         """ Turn scoreboard into a rendered image. """
@@ -85,4 +95,5 @@ class Scoreboard:
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
         self.screen.blit(self.level_image, self.level_rect)
+        self.screen.blit(self.fps_image, self.fps_image_rect)
         self.player_lives.draw(self.screen)
