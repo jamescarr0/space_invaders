@@ -4,6 +4,9 @@ class Settings:
     def __init__(self):
         """ Initialise game settings. """
 
+        # Limit Frames Per Second
+        self.FPS = 60
+
         # Screen Settings
         self.screen_width = 1200
         self.screen_height = 800
