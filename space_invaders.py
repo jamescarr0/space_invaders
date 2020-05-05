@@ -90,10 +90,9 @@ class SpaceInvaders:
             self.game_stats.reset_stats()
             self.game_stats.game_active = True
             self.settings.initialise_dynamic_settings()
-            # Reset scoreboard to zero
-            self.scoreboard.prepare_scoreboard()
-            self.scoreboard.prepare_level()
-            self.scoreboard.prepare_lives()
+
+            # Reset the scoreboard
+            self.scoreboard.prepare_scoreboard_images()
 
             # Reset aliens and missiles.
             self.aliens.empty()
@@ -156,30 +155,46 @@ class SpaceInvaders:
         collisions = pygame.sprite.groupcollide(self.missiles, self.aliens, True, True)
         if collisions:
             for aliens in collisions.values():
+                # Add points to the game score for every alien that has been hit with a missile including multiple
+                # strikes with one missile.
+                # Play sound effect for every alien hit.
                 self.game_stats.score += self.settings.alien_points * len(aliens)
-
-                # Play explosion (missile striking target) sound for each alien hit.
                 self.sfx.play_sound('explosion')
 
-            self.scoreboard.prepare_scoreboard()
-            self.scoreboard.check_high_score()
+            # Update the current score and check for a new high score.
+            self._update_scoreboard()
 
         # An empty group evaluates to False. Level up!
         if not self.aliens:
-            # Destroy existing missiles and create a new fleet of alien ships.
-            self.missiles.empty()
-            self._create_alien_fleet()
-            self.settings.increase_speed()
+            self._level_up()
 
-            # Increment Level
-            self.game_stats.level += 1
-            self.scoreboard.prepare_level()
+    def _update_scoreboard(self):
+        """ Update the game scores. """
+        self.scoreboard.prepare_game_score()
+        self.scoreboard.check_high_score()
+
+    def _create_alien(self, alien_number, alien_ship_width, row_number):
+        """ Create an alien ship and place it in the row. """
+        alien = Alien(self)
+        alien.x = alien_ship_width + 2 * alien_ship_width * alien_number
+        alien.rect.x = alien.x
+        alien.rect.y = (alien.rect.height + 2 * alien.rect.height * row_number) + 20
+        self.aliens.add(alien)
 
     def _create_alien_fleet(self):
         """ Create a fleet of alien ships. """
         # Create an alien to obtain dimensions
         alien = Alien(self)
         alien_ship_width, alien_ship_height = alien.rect.size
+        number_aliens_x, number_rows = self._calculate_space_for_aliens(alien_ship_height, alien_ship_width)
+
+        # Create a fleet of alien ships
+        for row_number in range(number_rows):
+            for alien_number in range(number_aliens_x):
+                self._create_alien(alien_number, alien_ship_width, row_number)
+
+    def _calculate_space_for_aliens(self, alien_ship_height, alien_ship_width):
+        """ Calculate available x and y space for the number of alien ships and the number of rows of ships. """
 
         # Calculate available x space for the number of alien ship objects
         available_space_x = self.settings.screen_width - (2 * alien_ship_width)
@@ -189,19 +204,7 @@ class SpaceInvaders:
         spaceship_height = self.spaceship.rect.height
         available_space_y = (self.settings.screen_height - (3 * alien_ship_height) - spaceship_height)
         number_rows = available_space_y // (2 * alien_ship_height)
-
-        # Create a fleet of alien ships
-        for row_number in range(number_rows):
-            for alien_number in range(number_aliens_x):
-                self._create_alien(alien_number, alien_ship_width, row_number)
-
-    def _create_alien(self, alien_number, alien_ship_width, row_number):
-        """ Create an alien ship and place it in the row. """
-        alien = Alien(self)
-        alien.x = alien_ship_width + 2 * alien_ship_width * alien_number
-        alien.rect.x = alien.x
-        alien.rect.y = (alien.rect.height + 2 * alien.rect.height * row_number) + 20
-        self.aliens.add(alien)
+        return number_aliens_x, number_rows
 
     def _check_alien_edges(self):
         """ Respond when alien fleet has reached the edge of the screen. """
@@ -217,17 +220,14 @@ class SpaceInvaders:
         # Toggle between right/left; 1 (right) or -1 (left)
         self.settings.alien_direction *= -1
 
-    def _update_aliens(self):
-        """ Update alien ships on screen """
-        self._check_alien_edges()
-        self.aliens.update()
-
-        # Check for aliens hitting spaceship.
-        if pygame.sprite.spritecollide(self.spaceship, self.aliens, False):
-            self._spaceship_hit()
-
-        # Check for aliens reaching the bottom of the screen.
-        self._check_aliens_bottom()
+    def _check_aliens_bottom(self):
+        """ Respond to aliens reaching the bottom of the screen. """
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= screen_rect.bottom:
+                # Same action as if the spaceship has been hit.
+                self._spaceship_hit()
+                break
 
     def _spaceship_hit(self):
         """ Respond to spaceship colliding with an alien """
@@ -255,17 +255,36 @@ class SpaceInvaders:
             self.game_stats.game_active = False
             pygame.mouse.set_visible(True)
 
-    def _check_aliens_bottom(self):
-        """ Respond to aliens reaching the bottom of the screen. """
-        screen_rect = self.screen.get_rect()
-        for alien in self.aliens.sprites():
-            if alien.rect.bottom >= screen_rect.bottom:
-                # Same action as if the spaceship has been hit.
-                self._spaceship_hit()
-                break
+    def _update_aliens(self):
+        """ Update alien ships on screen """
+        self._check_alien_edges()
+        self.aliens.update()
+
+        # Check for aliens hitting spaceship.
+        if pygame.sprite.spritecollide(self.spaceship, self.aliens, False):
+            self._spaceship_hit()
+
+        # Check for aliens reaching the bottom of the screen.
+        self._check_aliens_bottom()
+
+    def _level_up(self):
+        """ Level up game play. """
+        # Destroy existing missiles and create a new fleet of alien ships.
+        self.missiles.empty()
+        self._create_alien_fleet()
+        self.settings.increase_speed()
+
+        # Increment Level
+        self.game_stats.level += 1
+        self.scoreboard.prepare_level()
+
+    def _persist_high_score(self):
+        """ Persist the high score to file. """
+        with open(self.settings.high_score_file, 'w') as high_score_file:
+            high_score_file.write(str(self.game_stats.high_score))
 
     def _update_screen(self):
-        """ Update images on screen and flip to the new screen. """
+        """ Update images on screen and flip the new screen. """
         self.screen.blit(self.bg, self.screen.get_rect())
         self.spaceship.blitme()
 
@@ -283,14 +302,3 @@ class SpaceInvaders:
 
         # Make the most recently drawn screen visible.
         pygame.display.flip()
-
-    def _persist_high_score(self):
-        """ Persist the high score to file. """
-        with open(self.settings.high_score_file, 'w') as high_score_file:
-            high_score_file.write(str(self.game_stats.high_score))
-
-
-if __name__ == '__main__':
-    # Launch the game.
-    space_invaders = SpaceInvaders()
-    space_invaders.run_game()

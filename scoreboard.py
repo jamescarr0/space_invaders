@@ -19,9 +19,13 @@ class Scoreboard:
         self.text_color = self.settings.TEXT_COLOR
         self.font = pygame.font.Font('support_files/retro_font.ttf', 14)
 
-        # create the scoreboard images
-        self.prepare_scoreboard()
-        self.prepare_high_scoreboard()
+        # Create the scoreboard images
+        self.prepare_scoreboard_images()
+
+    def prepare_scoreboard_images(self):
+        """ Prepare the scoreboard images. """
+        self.prepare_game_score()
+        self.prepare_high_score()
         self.prepare_level()
         self.prepare_lives()
         self.prepare_frames_per_second(0.0)
@@ -43,7 +47,7 @@ class Scoreboard:
         self.fps_image_rect.top = self.level_rect.bottom + 10
         self.fps_image_rect.right = self.score_rect.right
 
-    def prepare_scoreboard(self):
+    def prepare_game_score(self):
         """ Turn scoreboard into a rendered image. """
         score_string = str(f"Score: {{:,}}".format(self.stats.score))
         self.score_image = self._render_image(score_string)
@@ -53,7 +57,7 @@ class Scoreboard:
         self.score_rect.right = self.screen_rect.right - 20
         self.score_rect.top = 20
 
-    def prepare_high_scoreboard(self):
+    def prepare_high_score(self):
         """ Turn the highest score into a rendered image. """
         high_score = str(f"High Score: {{:,}}".format(self.stats.high_score))
         self.high_score_image = self._render_image(high_score)
@@ -88,7 +92,7 @@ class Scoreboard:
         """ Check for new high score. """
         if self.stats.score > self.stats.high_score:
             self.stats.high_score = self.stats.score
-            self.prepare_high_scoreboard()
+            self.prepare_high_score()
 
     def show_scoreboard(self):
         """ Draw scoreboards and current level to the screen. """
